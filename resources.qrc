@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+        <file>asserts/faces.xml</file>
+        <file>asserts/gui.qml</file>
+        <file>asserts/SettingPanel.qml</file>
+    </qresource>
+</RCC>

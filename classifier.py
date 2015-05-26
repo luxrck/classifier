@@ -8,11 +8,11 @@ from numpy import zeros, array, matrix
 
 from database import *
 
-class SRCFaceRecognizer(object):
+class SRCFaceClassifier(object):
 	def __init__(self, solver):
 		self.solver = solver
 
-	def recognize(self, db, y, imgsize=(16, 16), maxiter=1000):
+	def classify(self, db, y, imgsize=(16, 16), maxiter=1000):
 		def rx(x, i):
 			ret = matrix([[0] for j in range(len(x))], dtype='float64')
 			for j in db.cols(i):

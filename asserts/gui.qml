@@ -16,16 +16,16 @@ ApplicationWindow {
 	signal databaseLoadComplete(string dbname, url dburl)
 	signal databaseChanged(url dburl)
 
-	signal faceRecognize(url dburl, url source, var dbimgsize, var threshold)
-	signal faceRecognizeCancel(url source)
-	signal faceRecognizeComplete(url source, var result, var preview)
+	signal faceClassify(url dburl, url source, var dbimgsize, var threshold)
+	signal faceClassifyCancel(url source)
+	signal faceClassifyComplete(url source, var result, var preview)
 
 	onDatabaseLoadComplete: {
 		imgprocdialog.close()
 		settings.databaseLoadComplete(dbname, dburl)
 	}
 
-	onFaceRecognizeComplete: {
+	onFaceClassifyComplete: {
 		imgprocdialog.close()
 
 		imgresultdialog.source = source
@@ -34,7 +34,7 @@ ApplicationWindow {
 		imgresultdialog.show()
 	}
 
-	title: "SRC人脸识别"
+	title: "SRC人脸分类器"
 
 	width: 800
 	height: 600
@@ -49,7 +49,7 @@ ApplicationWindow {
 		
 		id: mainpage
 
-		title: "SRC人脸识别"
+		title: "SRC人脸分类器"
 
 		backgroundColor: Palette.colors.black["500"]
 
@@ -116,7 +116,7 @@ ApplicationWindow {
 					//var image = Qt.createQmlObject(qmlstr, videosource, "preview1")
 					console.log("onImageCaptured: " + preview + ",,," + settings.db.info.url.toString())
 					var db = settings.db
-					faceRecognize(db.info.url, preview, settings.dbimgsize, settings.threshold)
+					faceClassify(db.info.url, preview, settings.dbimgsize, settings.threshold)
 				}
 			}
 		}

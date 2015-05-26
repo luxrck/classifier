@@ -3,7 +3,7 @@
 import os
 import sys
 import argparse
-from recognizer import *
+from classifier import *
 from solver import *
 from gui import *
 
@@ -22,20 +22,20 @@ def startcli(args):
 	if th > 1: th = 1.0
 
 	db = SRCFaceDatabase(dburl)
-	recognizer = SRCFaceRecognizer(DALMSolver())
+	classifier = SRCFaceClassifier(DALMSolver())
 
 	print("==== start recognize ====")
-	print("%-30s%-10s%s" % ('[path]', '[class]', '[sci]'))
+	print("%-40s%-10s%s" % ('[path]', '[class]', '[sci]'))
 
 	count = 0
 	total = 0
 
-	for i in imgs:
+	for i in testimgs:
 		total += 1
-		d,s = recognizer.recognize(db, imread(i))
+		d,s = classifier.classify(db, imread(i))
 		if s < th: continue
 		if d['class'] in i:
-			print("%-30s%-10s%.2f" % (i, d["class"], s))
+			print("%-40s%-10s%.2f" % (i, d["class"], s))
 		count += 1
 
 	print("result: %d/%d (%.2f%%), threshold: %.2f" % (count, total, (float(count)/total)*100, th))

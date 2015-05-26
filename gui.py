@@ -7,25 +7,25 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtQuick import QQuickImageProvider
 from PyQt5.QtQml import QQmlApplicationEngine, QQmlComponent
 
-from recognizer import *
+from classifier import *
 from solver import *
 
 import resources
 
 imread = lambda img: cv2.imread(img, cv2.IPL_DEPTH_8U)
 
-class Recognizer(object):
-	def __init__(self, engine, recognizer):
+class Classifier(object):
+	def __init__(self, engine, classifier):
 		self.workers = {}
 		self.databases = {}
-		self.recognizer = recognizer
+		self.classifier = classifier
 
 		self.window = engine.rootObjects()[0]
 
 		self.window.databaseLoad.connect(self.onDatabaseLoad)
 		self.window.databaseLoadCancel.connect(self.onDatabaseLoadCancel)
-		self.window.faceRecognize.connect(self.onFaceRecognize)
-		self.window.faceRecognizeCancel.connect(self.onFaceRecognizeCancel)
+		self.window.faceClassify.connect(self.onFaceClassify)
+		self.window.faceClassifyCancel.connect(self.onFaceClassifyCancel)
 
 	def run(self):
 		self.window.show()
@@ -52,21 +52,21 @@ class Recognizer(object):
 	def onDatabaseChanged(self, dburl):
 		self.currentdb = self.db(dburl)
 
-	def onFaceRecognize(self, dburl, source, dbimgsize, threshold):
+	def onFaceClassify(self, dburl, source, dbimgsize, threshold):
 		def worker():
 			db = self.db(dburl)
 			img = imread("/tmp/preview_1")
 			imgsize = (int(dbimgsize.height()), int(dbimgsize.width()))
 			
-			d,s = self.recognizer.recognize(db, img, imgsize, threshold)
+			d,s = self.classifier.classify(db, img, imgsize, threshold)
 			
 			basedir = db.dburl + '/' + d['location']
 			previewimgs = ["file://" + basedir + '/' + i for i in os.listdir(basedir)[:3]]
 
-			self.window.faceRecognizeComplete.emit(source, d, previewimgs)
+			self.window.faceClassifyComplete.emit(source, d, previewimgs)
 		worker()
 
-	def onFaceRecognizeCancel(self, source):
+	def onFaceClassifyCancel(self, source):
 		pass
 
 def startgui():
@@ -75,8 +75,8 @@ def startgui():
 	engine = QQmlApplicationEngine()
 	engine.load(QUrl("qrc:/asserts/gui.qml"))
 
-	srcrecog = Recognizer(engine, SRCFaceRecognizer(DALMSolver()))
+	classifier = Classifier(engine, SRCFaceClassifier(DALMSolver()))
 	#pdb.set_trace()
-	srcrecog.run()
+	classifier.run()
 
 	return app.exec_()

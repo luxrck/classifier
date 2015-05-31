@@ -1,6 +1,3 @@
-import os
-import json
-
 import cv2
 import numpy
 from numpy.linalg import norm

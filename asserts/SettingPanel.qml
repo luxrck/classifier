@@ -14,6 +14,7 @@ View {
 	property alias db: dblistview.currentItem
 	property size dbimgsize: Qt.size(dbimgsize.value, dbimgsize.value)
 	property alias threshold: srcthreshold.value
+	property var assistmode: assist.checked
 
 	signal databaseLoad(url dburl)
 	signal databaseLoadCancel(url dburl)
@@ -24,21 +25,18 @@ View {
 		dbmodel.append({"name": value.name, "url": value.url})
 	}
 
-	anchors {
-		fill: parent
-		margins: Units.dp(8)
-	}
+	anchors.fill: parent
 
 	FileDialog {
 
 		id: filedialog
-	
+
 		title: "Please choose a file"
 
 		selectExisting: true
 		selectFolder: true
 		selectMultiple: false
-	
+
 		onAccepted: {
 			console.log("You chose: " + filedialog.folder)
 			databaseLoad(filedialog.fileUrl)
@@ -51,80 +49,93 @@ View {
 	}
 
 	Column {
-	
-		anchors.fill: parent
 
-		ListItem.Subheader { id: dblistheader; text: "Face Database" }
+		anchors.fill: parent
+		spacing: Units.dp(16)
+
+		ListItem.Subheader {
+			text: "Face Database"
+			style: "subheading"
+		}
 
 		ListView {
 
-			id: dblistview
+				id: dblistview
 
-			width: parent.width
-			height: (dblistview.count >= 5 ? 5 : dblistview.count) * Units.dp(36)
+				width: parent.width
+				height: (dblistview.count >= 5 ? 5 : dblistview.count) * Units.dp(32)
 
-			model: dbmodel
-			delegate: dbdelegate
+				model: dbmodel
+				delegate: dbdelegate
 
-			ExclusiveGroup { id: dbgroup }
+				onCurrentItemChanged: {
+					dbgroup.current = dblistview.currentItem.radio
+				}
 
-			ListModel { id: dbmodel }
+				ExclusiveGroup { id: dbgroup }
 
-			Component {
+				ListModel { id: dbmodel }
 
-				id: dbdelegate
+				Component {
 
-				RowLayout {
+					id: dbdelegate
 
-					id: dblistitem
+					RowLayout {
 
-					property var info: {"name": name, "url": url}
+						id: dblistitem
 
-					width: settingPanel.width
-					height: Units.dp(32)
+						property var info: {"name": name, "url": url}
+						property alias radio: dbradio
 
-					RadioButton {
+						width: settingPanel.width - Units.dp(16)
+						height: Units.dp(32)
 
-						id: dbradio
+						RadioButton {
 
-						Layout.alignment: Qt.AlignLeft
-						
-						exclusiveGroup: dbgroup
-						text: name
+							id: dbradio
 
-						Tooltip {
-							text: url.toString()
-							mouseArea: dbradiomousearea
+							Layout.fillWidth: true
+							Layout.fillHeight: true
+							Layout.alignment: Qt.AlignLeft
+
+							exclusiveGroup: dbgroup
+
+							text: name
+
+							Tooltip {
+								text: url.toString()
+								mouseArea: dbradiomousearea
+							}
+
+							MouseArea {
+								id: dbradiomousearea
+
+								anchors.fill: parent
+								hoverEnabled: true
+							}
 						}
 
-						MouseArea {
-							id: dbradiomousearea
-							
-							anchors.fill: parent
-							hoverEnabled: true
-						}
-					}
+						IconButton {
 
-					IconButton {
-						
-						id: dbradioclose
+							id: dbradioclose
 
-						property var dbname: dbradio.text
+							Layout.alignment: Qt.AlignRight
 
-						Layout.alignment: Qt.AlignRight
+							size: Units.dp(16)
 
-						iconName: "navigation/close"
-						hoverAnimation: true
+							iconName: "navigation/close"
+							hoverAnimation: true
 
-						onClicked: {
-							var item = dblistview.indexAt(dbradioclose.x, dbradioclose.y)
-							console.log(item)
-							dbmodel.remove(item)
+							onClicked: {
+								var item = dblistview.indexAt(dbradioclose.x, dbradioclose.y)
+								console.log(item)
+								dbmodel.remove(item)
+								dblistview.currentItem = null
+							}
 						}
 					}
 				}
 			}
-		}
 
 		IconButton {
 
@@ -137,63 +148,73 @@ View {
 
 			onClicked: {
 				filedialog.open()
-				//dbmodel.append({"name": "attfaces"})
+				//dbmodel.append({"name": "attfaces", "url": "db://attfaces"})
 				//dbmodel.append({"name": "yalebfaces"})
 				//dbmodel.append({"name": "attfaces"})
 			}
 		}
 
-		ListItem.Subheader { text: "Database Image Size" }
-		
-		Text {
+		ListItem.Subtitled {
 
-			id: dbimgsizetxt
+			id: dbimgsetting
 
-			anchors {
-				left: parent.left
-				leftMargin: Units.dp(16)
+			text: "Database Image Size"
+			valueText: dbimgsize.value ? "(" + dbimgsize.value + "x" + dbimgsize.value + ")" : ""
+			showDivider: true
+
+			content: Slider {
+
+				id: dbimgsize
+
+				//anchors.horizontalCenter: parent.horizontalCenter
+				//width: parent.width - Units.dp(32)
+				width: parent.width
+
+				value: 16
+				stepSize: 1
+				minimumValue: 15
+				maximumValue: 30
+
+				tickmarksEnabled: true
 			}
 		}
 
-		Slider {
+		ListItem.Subtitled {
 
-			id: dbimgsize
+			text: "Threshold"
+			valueText: String(srcthreshold.value.toFixed(2))
+			showDivider: true
 
-			anchors.horizontalCenter: parent.horizontalCenter
+			content: Slider {
 
-			width: parent.width - Units.dp(32)
+				id: srcthreshold
 
-			value: 16
-			stepSize: 1
-			minimumValue: 15
-			maximumValue: 30
+				//anchors.horizontalCenter: parent.horizontalCenter
 
-			tickmarksEnabled: true
+				//width: parent.width - Units.dp(32)
+				anchors.fill: parent
 
-			onValueChanged: {
-				dbimgsizetxt.text = "(" + value + "x" + value + ")"
+				value: 0.5
+				stepSize: 0.05
+				minimumValue: 0
+				maximumValue: 1
+
+				//focus: true
+				//activeFocusOnPress: true
+				tickmarksEnabled: true
+				numericValueLabel: true
 			}
 		}
 
-		ListItem.Subheader { text: "Threshold" }
-
-		Slider {
-
-			id: srcthreshold
-
-			anchors.horizontalCenter: parent.horizontalCenter
-
-			width: parent.width - Units.dp(32)
-
-			value: 0.5
-			stepSize: 0.05
-			minimumValue: 0
-			maximumValue: 1
-
-			focus: true
-			activeFocusOnPress: true
-			tickmarksEnabled: true
-			numericValueLabel: true
+		ListItem.Subtitled {
+			text: "Assistant Mode"
+			subText: "User should select recognition area manually"
+			maximumLineCount: 3
+			secondaryItem: Switch {
+				id: assist
+				anchors.verticalCenter: parent.verticalCenter
+			}
+			onClicked: assist.checked = !assist.checked
 		}
 	}
 }

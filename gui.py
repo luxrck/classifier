@@ -2,7 +2,6 @@ import sys
 import threading
 
 from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtQuick import QQuickImageProvider
 from PyQt5.QtQml import QQmlApplicationEngine, QQmlComponent
@@ -52,14 +51,17 @@ class Classifier(object):
 	def onDatabaseChanged(self, dburl):
 		self.currentdb = self.db(dburl)
 
-	def onFaceClassify(self, dburl, source, dbimgsize, threshold):
+	def onFaceClassify(self, dburl, source, dbimgsize, threshold, cliparea):
 		def worker():
 			db = self.db(dburl)
 			img = imread("/tmp/preview_1")
+			x,y,width,height =[cliparea.property(i).toInt() for i in ["x", "y", "width", "height"]]
+			img = img[y:y+height, x:x+width]
+			#cv2.imwrite("preview_1.jpg", img)
 			imgsize = (int(dbimgsize.height()), int(dbimgsize.width()))
-			
+
 			d,s = self.classifier.classify(db, img, imgsize, threshold)
-			
+
 			basedir = db.dburl + '/' + d['location']
 			previewimgs = ["file://" + basedir + '/' + i for i in os.listdir(basedir)[:3]]
 
@@ -76,7 +78,6 @@ def startgui():
 	engine.load(QUrl("qrc:/asserts/gui.qml"))
 
 	classifier = Classifier(engine, SRCFaceClassifier(DALMSolver()))
-	#pdb.set_trace()
 	classifier.run()
 
 	return app.exec_()

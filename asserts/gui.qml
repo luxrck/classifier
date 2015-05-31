@@ -16,7 +16,7 @@ ApplicationWindow {
 	signal databaseLoadComplete(string dbname, url dburl)
 	signal databaseChanged(url dburl)
 
-	signal faceClassify(url dburl, url source, var dbimgsize, var threshold)
+	signal faceClassify(url dburl, url source, var dbimgsize, var threshold, var cliparea)
 	signal faceClassifyCancel(url source)
 	signal faceClassifyComplete(url source, var result, var preview)
 
@@ -46,7 +46,7 @@ ApplicationWindow {
 	initialPage: mainpage
 
 	Page {
-		
+
 		id: mainpage
 
 		title: "SRC人脸分类器"
@@ -72,13 +72,13 @@ ApplicationWindow {
 		]
 
 		NavigationDrawer {
-			
+
 			id: navsettings
 
 			mode: "right"
 
 			SettingPanel {
-				
+
 				id: settings
 
 				onDatabaseLoad: app.databaseLoad(dburl)
@@ -114,9 +114,15 @@ ApplicationWindow {
 					//var qmlstr = "import QtQuick 2.4; Image { source: " + preview + "; visible: false }"
 					//console.log(qmlstr)
 					//var image = Qt.createQmlObject(qmlstr, videosource, "preview1")
-					console.log("onImageCaptured: " + preview + ",,," + settings.db.info.url.toString())
-					var db = settings.db
-					faceClassify(db.info.url, preview, settings.dbimgsize, settings.threshold)
+					//console.log("onImageCaptured: " + preview + ",,," + settings.db.info.url.toString())
+					if (settings.assistmode) {
+						imgclipdialog.imgsource = preview
+						imgclipdialog.show()
+						imgprocdialog.close()
+					} else {
+						var cliparea = {"x": 0, "y": 0, "width": -1, "height": -1}
+						faceClassify(settings.db.info.url, preview, settings.dbimgsize, settings.threshold, cliparea)
+					}
 				}
 			}
 		}
@@ -142,7 +148,7 @@ ApplicationWindow {
 			}
 
 			backgroundColor: Palette.colors.red["500"]
-			
+
 			iconName: "action/work"
 			isMiniSize: false
 
@@ -153,8 +159,20 @@ ApplicationWindow {
 				} else {
 					imgprocdialog.show()
 					camera.imageCapture.captureToLocation("/tmp/preview_1")
+					//camera.imageCapture.capture()
 				}
 			}
+		}
+	}
+
+	ImageClipDialog {
+		id: imgclipdialog
+
+		width: Units.dp(640)
+
+		onImageClipped: {
+			imgprocdialog.show()
+			faceClassify(settings.db.info.url, preview, settings.dbimgsize, settings.threshold, cliparea)
 		}
 	}
 
@@ -169,7 +187,7 @@ ApplicationWindow {
 
 		dialogContent: [
 			Row {
-			
+
 				Label {
 
 					id: infolabel
@@ -179,7 +197,7 @@ ApplicationWindow {
 						leftMargin: 100
 					}
 
-					text: "processing..."
+					text: ""
 				}
 			}
 		]
@@ -189,18 +207,20 @@ ApplicationWindow {
 
 		id: imgprocdialog
 
+		globalMouseAreaEnabled: false
+
 		positiveButtonText: "Close"
 		negativeButton.visible: false
 
 		dialogContent: [
 			Row {
-			
+
 				anchors.fill: parent.fill
 
 				spacing: 4
 
 				ProgressCircle {
- 
+
 					anchors {
 						verticalCenter: parent.verticalCenter
 						margins: 32
@@ -208,9 +228,9 @@ ApplicationWindow {
 
 					color: Palette.colors.red["500"]
 				}
-				
+
 				Label {
- 
+
 					anchors {
 						verticalCenter: parent.verticalCenter
 						leftMargin: 100
@@ -223,7 +243,7 @@ ApplicationWindow {
 	}
 
 	Dialog {
-		
+
 		id: imgresultdialog
 
 		property alias source: inputimg.source
@@ -243,7 +263,7 @@ ApplicationWindow {
 
 		dialogContent: [
 			Row {
-				
+
 				anchors.fill: parent.fill
 
 				spacing: 16
@@ -297,14 +317,14 @@ ApplicationWindow {
 					width: 160
 					height: 120
 				}
-				
+
 				Image {
 					id: imgpreview2
 
 					width: 160
 					height: 120
 				}
-				
+
 				Image {
 					id: imgpreview3
 

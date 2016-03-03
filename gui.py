@@ -54,7 +54,7 @@ class Classifier(object):
 	def onFaceClassify(self, dburl, source, dbimgsize, threshold, cliparea):
 		def worker():
 			db = self.db(dburl)
-			img = imread("/tmp/preview_1")
+			img = imread("/tmp/preview_1.jpg")
 			x,y,width,height =[cliparea.property(i).toInt() for i in ["x", "y", "width", "height"]]
 			img = img[y:y+height, x:x+width]
 			#cv2.imwrite("preview_1.jpg", img)

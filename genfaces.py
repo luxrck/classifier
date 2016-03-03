@@ -25,6 +25,11 @@ def main():
 	if cfg:
 		cvfacerecognizer = CvFaceRecognizer(cfg)
 
+	if os.path.exists(clsuri):
+		try:
+			os.rmdir(clsuri)
+		except:
+			os.remove(clsuri)
 	os.mkdir(clsuri)
 
 	count = 0

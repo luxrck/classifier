@@ -3,7 +3,7 @@ import QtQuick.Controls 1.3
 
 import QtMultimedia 5.4
 
-import Material 0.1
+import Material 0.2
 import Material.ListItems 0.1 as ListItem
 import Material.Extras 0.1
 
@@ -34,29 +34,27 @@ ApplicationWindow {
 		imgresultdialog.show()
 	}
 
-	title: "SRC人脸分类器"
+	title: "SRC Classifier"
 
-	width: 800
-	height: 600
-	maximumWidth: 800
-	maximumHeight: 600
+	// width: 800
+	// height: 600
+	// maximumWidth: 800
+	// maximumHeight: 600
 
-	flags: Qt.WindowTitleHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint
+	// clientSideDecorations: true
+
+	// flags: Qt.WindowTitleHint | Qt.WindowMinimizeButtonHint | Qt.WindowCloseButtonHint
 
 	initialPage: mainpage
 
 	Page {
-
 		id: mainpage
 
-		title: "SRC人脸分类器"
-
+		title: "SRC Classifier"
 		backgroundColor: Palette.colors.black["500"]
 
 		actions: [
-
 			Action {
-
 				name: "Settings"
 
 				// Icon name from the Google Material Design icon pack
@@ -72,14 +70,13 @@ ApplicationWindow {
 		]
 
 		NavigationDrawer {
-
 			id: navsettings
 
 			mode: "right"
 
 			SettingPanel {
-
 				id: settings
+				height: parent.height
 
 				onDatabaseLoad: app.databaseLoad(dburl)
 				onDatabaseLoadCancel: app.databaseLoadCancel(dburl)
@@ -108,9 +105,11 @@ ApplicationWindow {
 
 			imageCapture {
 
-				//resolution: "800x600"
+				// resolution: "800x600"
 
 				onImageCaptured: {
+					console.log(preview)
+					console.log(imageCapture.capturedImagePath)
 					//var qmlstr = "import QtQuick 2.4; Image { source: " + preview + "; visible: false }"
 					//console.log(qmlstr)
 					//var image = Qt.createQmlObject(qmlstr, videosource, "preview1")
@@ -167,8 +166,7 @@ ApplicationWindow {
 
 	ImageClipDialog {
 		id: imgclipdialog
-
-		width: Units.dp(640)
+		anchors.fill: parent
 
 		onImageClipped: {
 			imgprocdialog.show()
@@ -177,34 +175,15 @@ ApplicationWindow {
 	}
 
 	Dialog {
-
 		id: infodialog
 
-		property alias info: infolabel.text
+		property alias info: infodialog.text
 
 		positiveButtonText: "Close"
 		negativeButton.visible: false
-
-		dialogContent: [
-			Row {
-
-				Label {
-
-					id: infolabel
-
-					anchors {
-						verticalCenter: parent.verticalCenter
-						leftMargin: 100
-					}
-
-					text: ""
-				}
-			}
-		]
 	}
 
 	Dialog {
-
 		id: imgprocdialog
 
 		globalMouseAreaEnabled: false
@@ -214,13 +193,10 @@ ApplicationWindow {
 
 		dialogContent: [
 			Row {
-
 				anchors.fill: parent.fill
-
 				spacing: 4
 
 				ProgressCircle {
-
 					anchors {
 						verticalCenter: parent.verticalCenter
 						margins: 32
@@ -230,7 +206,6 @@ ApplicationWindow {
 				}
 
 				Label {
-
 					anchors {
 						verticalCenter: parent.verticalCenter
 						leftMargin: 100
@@ -251,12 +226,14 @@ ApplicationWindow {
 		property var preview: []
 
 		onPreviewChanged: {
-			if (preview.length)  {
+			if (preview.length)	{
 				imgpreview1.source = preview[0]
 				imgpreview2.source = preview[1]
 				imgpreview3.source = preview[2]
 			}
 		}
+
+		title: "Recognize result"
 
 		positiveButtonText: "Done"
 		negativeButton.visible: false

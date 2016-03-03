@@ -3,7 +3,7 @@ import QtQuick.Controls 1.3
 import QtQuick.Dialogs 1.2
 import QtQuick.Layouts 1.1
 
-import Material 0.1
+import Material 0.2
 import Material.ListItems 0.1 as ListItem
 import Material.Extras 0.1
 

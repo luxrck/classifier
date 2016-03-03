@@ -15,11 +15,11 @@ class SRCFaceClassifier(object):
 			for j in db.cols(i):
 				ret[j] = x[j]
 			return ret
-		
+
 		ry = lambda A, x, e, y, i: norm(y-e-A*rx(x,i), 2)
 
 		minclass = lambda A, x, e, y: min((ry(A, x, e, y, i), i) for i in range(len(db.database)))
-		
+
 		def sci(x):
 			k = len(db.database)
 			lx1 = norm(x, 1)

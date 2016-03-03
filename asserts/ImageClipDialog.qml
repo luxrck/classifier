@@ -1,105 +1,128 @@
-import QtQuick 2.4
+import QtQuick 2.5
 import QtQuick.Controls 1.3
-import QtQuick.Layouts 1.1
+import QtQuick.Layouts 1.2
 
-import QtMultimedia 5.4
+import QtMultimedia 5.5
 
-import Material 0.1
+import Material 0.2
 import Material.ListItems 0.1 as ListItem
 import Material.Extras 0.1
 
 Dialog {
+	id: imgclipdialog
 
-    id: imgclipdialog
+	signal imageClipped(var preview, var cliparea)
+	property alias imgsource: imgpreview.source
 
-    property alias imgsource: imgpreview.source
+	title: "  "
 
-    signal imageClipped(var preview, var cliparea)
+	positiveButtonText: "Next"
+	positiveButton.enabled: false
+	negativeButton.visible: false
 
-    //title: "Please select face area from this image"
+	// interactive: false
 
-    positiveButtonText: "Next"
-    positiveButton.enabled: false
-    negativeButton.visible: false
+	onOpened: {
+		imgcliprect.x = imgcliprect.x0 = 0
+		imgcliprect.y = imgcliprect.y0 = 0
+		imgcliprect.width = imgcliprect.height = 0
+		positiveButton.enabled = false
+	}
 
-    interactive: false
+	onAccepted: {
+		imgclipdialog.close()
 
-    onAccepted: {
-        imgclipdialog.close()
+		var isw = imgpreview.sourceSize.width
+		var ish = imgpreview.sourceSize.height
 
-        var isw = imgpreview.sourceSize.width
-        var ish = imgpreview.sourceSize.height
+		var sx = isw / imgpreview.width
+		var sy = ish / imgpreview.height
 
-        var sx = isw / imgpreview.width
-        var sy = ish / imgpreview.height
+		var x = imgcliprect.x * sx
+		var y = imgcliprect.y * sy
+		var width = imgcliprect.width * sx
+		var height = imgcliprect.height * sy
 
-        var x = imgcliprect.x * sx
-        var y = imgcliprect.y * sy
-        var width = imgcliprect.width * sx
-        var height = imgcliprect.height * sy
+		console.log("x:"+x+","+y+","+width+","+height)
 
-        console.log("x:"+x+","+y+","+width+","+height)
+		imgcliprect.width = 0
+		imgcliprect.height = 0
 
-        imgcliprect.width = 0
-        imgcliprect.height = 0
+		return imageClipped(imgsource, {"x": x, "y": y, "width": width, "height": height})
+	}
 
-        return imageClipped(imgsource, {"x": x, "y": y, "width": width, "height": height})
-    }
+	dialogContent: [
+		Image {
+			id: imgpreview
+			anchors {
+				left: parent.left
+				right: parent.right
+			}
+			fillMode: Image.PreserveAspectFit
 
-    dialogContent: [
-        Image {
-            id: imgpreview
+			MouseArea {
+				id: imgmousearea
 
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+				anchors.fill: parent
 
-            height: imgpreview.width * 0.75
+				onPressed: {
+					imgcliprect.x = mouse.x
+					imgcliprect.y = mouse.y
+					imgcliprect.x0 = mouse.x
+					imgcliprect.y0 = mouse.y
+					imgcliprect.width = imgcliprect.height = 0
+				}
 
-            Rectangle {
-                id: imgcliprect
+				onPositionChanged: {
+					if (imgmousearea.pressed) {
+						var s0 = imgpreview.sourceSize
+						var x0 = Math.min(mouse.x, imgcliprect.x0)
+						var y0 = Math.min(mouse.y, imgcliprect.y0)
+						x0 = Math.max(x0, 0)
+						y0 = Math.max(y0, 0)
+						var x1 = Math.max(mouse.x, imgcliprect.x0)
+						var y1 = Math.max(mouse.y, imgcliprect.y0)
+						x1 = Math.min(x1, imgpreview.width)
+						y1 = Math.min(y1, imgpreview.height)
+						imgcliprect.x = x0
+						imgcliprect.y = y0
+						imgcliprect.width = x1 - x0
+						imgcliprect.height = y1 - y0
+						console.log(x0,y0,x1,y1, s0, imgpreview.width, imgpreview.height)
+					}
+				}
 
-                property var x0: 0
-                property var y0: 0
+				onReleased: {
+					if ((imgcliprect.width >= Units.dp(16)) && (imgcliprect.height >= Units.dp(16))) {
+						imgclipdialog.positiveButton.enabled = true
+					} else {
+						imgclipdialog.positiveButton.enabled = false
+					}
+				}
+			}
 
-                color: Qt.rgba(0, 0, 0, 0.5)
-            }
+			Rectangle {
+				id: imgcliprect
 
-            DropArea { id: imgdroparea; anchors.fill: parent }
+				property var x0: 0
+				property var y0: 0
 
-            MouseArea {
-                id: imgmousearea
+				color: Qt.rgba(0, 0, 0, 0.5)
 
-                anchors.fill: parent
+				Drag.active: imgcliparea.drag.active
+				Drag.hotSpot.x: 10
+				Drag.hotSpot.y: 10
 
-                onPressed: {
-                    imgcliprect.x = mouse.x
-                    imgcliprect.y = mouse.y
-                    imgcliprect.x0 = mouse.x
-                    imgcliprect.y0 = mouse.y
-                    imgcliprect.width = imgcliprect.height = 0
-                }
+				MouseArea {
+					id: imgcliparea
 
-                onPositionChanged: {
-                    if (imgmousearea.pressed) {
-                        var x0 = Math.min(mouse.x, imgcliprect.x0)
-                        var y0 = Math.min(mouse.y, imgcliprect.y0)
-                        var x1 = Math.max(mouse.x, imgcliprect.x0)
-                        var y1 = Math.max(mouse.y, imgcliprect.y0)
-                        imgcliprect.x = x0
-                        imgcliprect.y = y0
-                        imgcliprect.width = x1 - x0
-                        imgcliprect.height = y1 - y0
-                    }
-                }
+					property var px: 0
+					property var py: 0
 
-                onReleased: {
-                    if ((imgcliprect.width >= Units.dp(16)) && (imgcliprect.height >= Units.dp(16))) {
-                        imgclipdialog.positiveButton.enabled = true
-                    }
-                }
-            }
-        }
-    ]
+					anchors.fill: parent
+					drag.target: parent
+				}
+			}
+		}
+	]
 }

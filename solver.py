@@ -1,3 +1,4 @@
+import math
 from numpy.linalg import norm, eig
 from numpy import sign, eye, zeros, copy, matrix, array, multiply, dot
 import pdb
@@ -7,15 +8,18 @@ class DALMSolver(object):
 		A = matrix(A)
 		b = matrix(b)
 
+		m, n = A.shape
+
 		tol = 1e-3
 		lam = 1e-1
-		m, n = A.shape
+		#lam = 1 / math.sqrt(max(m, n-m))
+
 		beta = norm(b, 1) / m
-		
+
 		x = zeros((n, 1), dtype='float64')
 		y = zeros((m, 1), dtype='float64')
 		z = zeros((m+n, 1), dtype='float64')
-		#pdb.set_trace()		
+		#pdb.set_trace()
 		Aty = A.T * y
 		niter = 0
 		while niter < maxiter:
